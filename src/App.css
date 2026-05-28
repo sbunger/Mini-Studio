@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Jersey+10&display=swap');
+
+body {
+    font-family: "Jersey 10", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.cell {
+    width: 60px;
+    height: 40px;
+
+    background-color: #ffb7b7;
+    border: none;
+    border-radius: 2px;
+
+    transition: all .15s;
+
+    outline: #dd4141 solid 0px;
+}
+
+.cell:hover {
+    transform: scale(1.05);
+}
+
+.cell.active {
+    background-color: #ff7171;
+    outline: #dd4141 solid 2.5px;
+}
+
+.cell.playing {
+    background-color: #c0bcff;
+    outline: #574de1 solid 0px;
+}
+
+.cell.playing.active {
+    background-color: #7268ff;
+    outline: #574de1 solid 2.5px;
+}
+
+button {
+    margin: 5px;
+    font-family: "Jersey 10", sans-serif;
+    font-size: 20px;
+}
+
+h1 {
+    margin: 15px 5px;
+}
