@@ -9,11 +9,10 @@ const INSTRUMENT_OPTIONS = [
   { value: 'snare', label: 'Snare' },
   { value: 'hat', label: 'Hihat' },
   { value: 'tom', label: 'Tom' },
+  { value: 'openhat', label: 'Open Hat' },
 ];
 
-const ROW_COLORS = ['#f97316', '#3b82f6', '#14b8a6'];
-
-type InstrumentType = 'kick' | 'snare' | 'hat' | 'tom';
+type InstrumentType = 'kick' | 'snare' | 'hat' | 'tom' | 'openhat';
 
 function createSynth(type: InstrumentType): Tone.MembraneSynth | Tone.NoiseSynth | Tone.MetalSynth {
   switch (type) {
@@ -39,7 +38,6 @@ function createSynth(type: InstrumentType): Tone.MembraneSynth | Tone.NoiseSynth
         octaves: 1.5,
       }).toDestination();
 
-
     case 'tom':
       return new Tone.MembraneSynth({
         pitchDecay: 0.08,
@@ -47,32 +45,35 @@ function createSynth(type: InstrumentType): Tone.MembraneSynth | Tone.NoiseSynth
         envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.1 },
       }).toDestination();
 
+    case 'openhat':
+      return new Tone.MetalSynth({
+        envelope: { attack: 0.001, decay: 0.8, release: 0.2 },
+        harmonicity: 5.1,
+        modulationIndex: 16,
+        resonance: 3500,
+        octaves: 0.5,
+      }).toDestination();
+
     default:
       return new Tone.MembraneSynth().toDestination();
   }
 }
 
+
 function triggerSynth(synth: any, type: InstrumentType, time: number) {
   switch (type) {
-    case 'kick':
-      synth.triggerAttackRelease("C2", "8n", time); break;
-    case 'tom':
-      synth.triggerAttackRelease('G2', '8n', time); break;
-    case 'snare':
-      synth.triggerAttackRelease("8n", time); break;
-    case 'hat':
-      synth.triggerAttackRelease("16n", time); break;
-    default:
-      synth.triggerAttackRelease('C2', '8n', time);
+    case 'kick': synth.triggerAttackRelease("C2", "8n", time); break;
+    case 'tom': synth.triggerAttackRelease('G2', '8n', time); break;
+    case 'snare': synth.triggerAttackRelease("8n", time); break;
+    case 'hat': synth.triggerAttackRelease("16n", time); break;
+    case 'openhat': synth.triggerAttackRelease("8n", time); break;
+    default: synth.triggerAttackRelease('C2', '8n', time);
   }
 }
 
-const initialPattern = [
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-]
+const emptyRow = () => Array(STEPS).fill(0);
 
+const initialPattern = [emptyRow(), emptyRow(), emptyRow()];
 const initalInstruments: InstrumentType[] = ['kick', 'snare', 'hat'];
 
 export default function App() {
@@ -85,7 +86,6 @@ export default function App() {
   const stepRef = useRef(0);
   const patternRef = useRef(pattern);
   const startedRef = useRef(false);
-
   const instrumentsRef = useRef(instruments);
   const synthsRef = useRef<any[]>([]);
 
@@ -109,7 +109,6 @@ export default function App() {
       });
 
       requestAnimationFrame(() => { setStep(currentStep); });
-
       stepRef.current = (currentStep + 1) % STEPS;
     }, "8n");
 
@@ -139,6 +138,19 @@ export default function App() {
     });
   };
 
+  const addTrack = () => {
+    synthsRef.current = [...synthsRef.current, createSynth('kick')];
+    setPattern((prev) => [...prev, emptyRow()]);
+    setInstruments((prev) => [...prev, 'kick']);
+  };
+
+  const removeTrack = (rowIndex: number) => {
+    synthsRef.current[rowIndex]?.dispose();
+    synthsRef.current = synthsRef.current.filter((_, i) => i !== rowIndex);
+    setPattern((prev) => prev.filter((_, i) => i !== rowIndex));
+    setInstruments((prev) => prev.filter((_, i) => i !== rowIndex));
+  }
+
   const start = async () => {
     await Tone.start();
     if (!startedRef.current) {
@@ -154,20 +166,19 @@ export default function App() {
     setIsPlaying(false);
   }
 
+  
   return (
     <div className='app'>
       <h1>Mini Studio</h1>
 
       <div className="grid">
         {pattern.map((row, rowIndex) => {
-        const color = ROW_COLORS[rowIndex];
         return (
           <div key={rowIndex} className="row">
             <select
               className="instrument-select"
               value={instruments[rowIndex]}
               onChange={(e) => changeInstrument(rowIndex, e.target.value as InstrumentType)}
-              style={{ '--row-color': color } as React.CSSProperties}
             >
               {INSTRUMENT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -178,12 +189,19 @@ export default function App() {
                 key={colIndex}
                 onClick={() => toggleStep(rowIndex, colIndex)}
                 className={`cell ${cell ? 'active' : ''} ${colIndex === step ? 'playing' : ''}`}
-                style={{ '--row-color': color } as React.CSSProperties}
               />
             ))}
+            <button className='remove-track' onClick={() => removeTrack(rowIndex)}>
+              x
+            </button>
           </div>
         );
       })}
+
+      <button className="new-track" onClick={() => addTrack()}>
+        +
+      </button>
+
     </div>
 
 

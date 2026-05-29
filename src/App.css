@@ -25,6 +25,19 @@ h1 {
     color: #dd4141;
 }
 
+button {
+    font-family: "Jersey 10", sans-serif;
+    border: none;
+    cursor: pointer;
+}
+
+input {
+    font-family: "Jersey 10", sans-serif;
+    border: none;
+}
+
+
+
 .grid {
     display: flex;
     flex-direction: column;
@@ -53,14 +66,15 @@ h1 {
 
     transition: .15s all;
 
-    cursor: pointer;
     appearance: none;
     text-align: center;
+    cursor: pointer;
 }
 
 .instrument-select:hover {
     outline: #dd4141 solid 2.5px;
 }
+
 
 
 .cell {
@@ -73,9 +87,8 @@ h1 {
 
     transition: all .15s;
 
-    cursor: pointer;
-
     outline: #dd4141 solid 0px;
+    cursor: pointer;
 }
 
 .cell:hover {
@@ -97,6 +110,46 @@ h1 {
     outline: #574de1 solid 2.5px;
 }
 
+
+.remove-track {
+    width: 40px;
+    height: 40px;
+    border-radius: 2px;
+
+    background-color: #e6eaf2;
+    color: #1e1e21;
+
+    font-size: 20px;
+    margin-left: 2px;
+
+    transition: .15s all;
+}
+
+.remove-track:hover, .new-track:hover {
+    font-size: 23px;
+    background-color: #dae1ec;
+}
+
+
+.new-track {
+    font-size: 20px;
+
+    width: 100%;
+    height: 40px;
+    border-radius: 2px;
+
+    background-color: #e6eaf2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    transition: .15s all;
+}
+
+
+
+
+
 .controls {
     display: flex;
     align-items: center;
@@ -104,26 +157,24 @@ h1 {
     justify-content: center;
 }
 
-button {
+.controls button {
     margin: 5px;
-    font-family: "Jersey 10", sans-serif;
     font-size: 20px;
-    cursor: pointer;
-    border: none;
     
-    background: #c0bcff;
-    color: #574de1;
+    background-color: #c0bcff;
+    color: #1e1e21;
     border-radius: 2px;
     padding: 2px 14px;
     transition: all .15s;
 }
 
-button:hover:not(:disabled) {
-    background: #574de1;
+.controls button:hover:not(:disabled) {
+    background: #7268ff;
     color: #ffffff;
 }
 
-button:disabled {
+.controls button:disabled {
+    background-color: #dae1ec;
     cursor: default;
     opacity: .7;
 }
@@ -133,26 +184,31 @@ button:disabled {
     align-items: center;
     gap: 8px;
     font-size: 20px;
-    color: #574de1;
+    color: #1e1e21;
     margin: 5px;
     margin-left: 30px;
 }
 
 .bpm-label input[type="number"] {
-  font-family: "Jersey 10", sans-serif;
   font-size: 20px;
-  color: #574de1;
-  background: #c0bcff;
+  color: #1e1e21;
+  background-color: #dae1ec;
   border-radius: 2px;
   width: 60px;
   text-align: center;
-  border: none;
+
+  transition: .15s all;
+}
+
+.bpm-label input[type="number"]:hover {
+  background-color: #c0bcff;
+}
+
+.bpm-label input[type="number"]:focus-visible {
+  outline: none;
 }
 
 
-.bpm-label input[type="number"]:focus {
-  border-color: #dd4141;
-}
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
