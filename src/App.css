@@ -4,7 +4,64 @@ body {
     font-family: "Jersey 10", sans-serif;
     font-weight: 400;
     font-style: normal;
+    background: #fff5f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2em;
+    padding: 2em;
+}
+
+h1 {
+    margin: 15px 5px;
+    font-size: 2em;
+    color: #dd4141;
+}
+
+.grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.instrument-select {
+    width: 90px;
+    height: 40px;
+    border-radius: 2px;
+    margin-right: 4px;
+
+    border: none;
+    outline: #ffb7b7 solid 2.5px;
+    color: #dd4141;
+    background: #ffebeb;
+
+    font-size: 18px;
+    font-family: "Jersey 10", sans-serif;
+
+    transition: .15s all;
+
+    cursor: pointer;
+    appearance: none;
+    text-align: center;
+}
+
+.instrument-select:hover {
+    outline: #dd4141 solid 2.5px;
+}
+
 
 .cell {
     width: 60px;
@@ -15,6 +72,8 @@ body {
     border-radius: 2px;
 
     transition: all .15s;
+
+    cursor: pointer;
 
     outline: #dd4141 solid 0px;
 }
@@ -27,23 +86,77 @@ body {
     background-color: #ff7171;
     outline: #dd4141 solid 2.5px;
 }
-
+ 
 .cell.playing {
     background-color: #c0bcff;
     outline: #574de1 solid 0px;
 }
-
+ 
 .cell.playing.active {
     background-color: #7268ff;
     outline: #574de1 solid 2.5px;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 button {
     margin: 5px;
     font-family: "Jersey 10", sans-serif;
     font-size: 20px;
+    cursor: pointer;
+    border: none;
+    
+    background: #c0bcff;
+    color: #574de1;
+    border-radius: 2px;
+    padding: 2px 14px;
+    transition: all .15s;
 }
 
-h1 {
-    margin: 15px 5px;
+button:hover:not(:disabled) {
+    background: #574de1;
+    color: #ffffff;
 }
+
+button:disabled {
+    cursor: default;
+    opacity: .7;
+}
+
+.bpm-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+    color: #574de1;
+    margin: 5px;
+    margin-left: 30px;
+}
+
+.bpm-label input[type="number"] {
+  font-family: "Jersey 10", sans-serif;
+  font-size: 20px;
+  color: #574de1;
+  background: #c0bcff;
+  border-radius: 2px;
+  width: 60px;
+  text-align: center;
+  border: none;
+}
+
+
+.bpm-label input[type="number"]:focus {
+  border-color: #dd4141;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+input[type="number"] { -moz-appearance: textfield; }
