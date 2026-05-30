@@ -151,6 +151,15 @@ function InstrumentSelect({ value, onChange }: { value: InstrumentType; onChange
   )
 }
 
+function Tooltip({ text, children, direction = 'top' }: { text: string; children: React.ReactNode; direction?: 'top' | 'bottom' | 'left' | 'right' }) {
+  return (
+    <div className='tooltip-wrap'>
+      {children}
+      <span className={`tooltip tooltip-${direction}`}>{text}</span>
+    </div>
+  );
+}
+
 
 export default function App() {
   const [pattern, setPattern] = useState(initialPattern);
@@ -271,7 +280,9 @@ export default function App() {
         {pattern.map((row, rowIndex) => {
           return (
             <div key={rowIndex} className="row">
+              <Tooltip text={volumes[rowIndex] === 0 ? 'Muted' : `${volumes[rowIndex]}`} direction='left'>
               <VolumeSlider value={volumes[rowIndex]} onChange={(v) => changeVolume(rowIndex, v)} />
+              </Tooltip>
               <InstrumentSelect
                 value={instruments[rowIndex]}
                 onChange={(v) => changeInstrument(rowIndex, v)}
@@ -283,10 +294,11 @@ export default function App() {
                   className={`cell ${cell ? 'active' : ''} ${colIndex === step ? 'playing' : ''}`}
                 />
               ))}
-              <button className='remove-track' onClick={() => removeTrack(rowIndex)}>
-                <Xmark color="currentColor" width={24} />
-              </button>
-
+              <Tooltip text='Remove Track' direction='right'>
+                <button className='remove-track' onClick={() => removeTrack(rowIndex)}>
+                  <Xmark color="currentColor" width={24} />
+                </button>
+              </Tooltip>
             </div>
           );
         })}
@@ -308,9 +320,11 @@ export default function App() {
             />
           </div>
           
-          <button className="new-track" onClick={() => addTrack()}>
-            <Plus color="currentColor" width={24} />
-          </button>
+          <Tooltip text='New Track' direction='bottom'>
+            <button className="new-track" onClick={() => addTrack()}>
+              <Plus color="currentColor" width={24} />
+            </button>
+          </Tooltip>
 
           <button className='play' onClick={isPlaying ? stop : start}>
             {isPlaying ? <PauseSolid color="currentColor" width={24} /> : <PlaySolid color="currentColor" width={24} />}

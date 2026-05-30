@@ -232,6 +232,10 @@ input {
     transition: .15s all;
 }
 
+.tooltip-wrap:has(.new-track) {
+    flex: 1;
+}
+
 .play {
     height: 40px;
     width: 40px;
@@ -297,3 +301,56 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 input[type="number"] { -moz-appearance: textfield; }
+
+
+.tooltip-wrap {
+    position: relative;
+    display: flex;
+}
+
+.tooltip {
+    position: absolute;
+    
+    color: #fff;
+    background-color: #1e1e21;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+    pointer-events: none;
+
+    opacity: 0;
+    translate: 0 -4px;
+    transition: all .15s;
+
+    z-index: 100;
+}
+
+.tooltip-top {
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.tooltip-bottom {
+    top: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.tooltip-left {
+    right: calc(100% + 6px);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.tooltip-right {
+    left: calc(100% + 6px);
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.tooltip-wrap:hover .tooltip {
+    opacity: 0.8;
+    translate: 0 0;
+}
