@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import * as Tone from "tone";
-import { PlaySolid, PauseSolid, Xmark, Plus, SoundHighSolid, SoundLowSolid, SoundMinSolid, SoundOffSolid } from 'iconoir-react';
+import { PlaySolid, PauseSolid, Xmark, Plus, SoundHighSolid, SoundLowSolid, SoundMinSolid, SoundOffSolid, NavArrowLeft, NavArrowRight } from 'iconoir-react';
 import "./App.css";
 
 const STEPS = 8
@@ -112,6 +112,8 @@ function useDrag(onChange: (val: number) => void) {
   return { trackRef, handleMouseDown };
 }
 
+
+
 function VolumeSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const { trackRef, handleMouseDown } = useDrag(onChange);
   const iconSize = 20;
@@ -120,6 +122,31 @@ function VolumeSlider({ value, onChange }: { value: number; onChange: (v: number
     <div className='volume-control' ref={trackRef} onMouseDown={handleMouseDown}>
       <div className='volume-indicator' style={{ width: `${value}%` }} />
       {value > 60 ? <SoundHighSolid width={iconSize}/> : value > 25 ? <SoundLowSolid width={iconSize}/> : value > 0 ? <SoundMinSolid width={iconSize}/> : <SoundOffSolid width={iconSize}/>}
+    </div>
+  )
+}
+
+function InstrumentSelect({ value, onChange }: { value: InstrumentType; onChange: (v: InstrumentType) => void}) {
+  const dirRef = useRef<'left' | 'right'>('right');
+  const currentIndex = INSTRUMENT_OPTIONS.findIndex(o => o.value === value);
+  
+  const prev = () => {
+    dirRef.current = 'left';
+    const i = (currentIndex - 1 + INSTRUMENT_OPTIONS.length) % INSTRUMENT_OPTIONS.length;
+    onChange(INSTRUMENT_OPTIONS[i].value as InstrumentType);
+  };
+
+  const next = () => {
+    dirRef.current = 'right';
+    const i = (currentIndex + 1) % INSTRUMENT_OPTIONS.length;
+    onChange(INSTRUMENT_OPTIONS[i].value as InstrumentType);
+  }
+
+  return (
+    <div className='instrument-select'>
+      <button onClick={prev}><NavArrowLeft/></button>
+        <span key={value} data-dir={dirRef.current}>{INSTRUMENT_OPTIONS[currentIndex].label}</span>
+      <button onClick={next}><NavArrowRight/></button>
     </div>
   )
 }
@@ -226,6 +253,17 @@ export default function App() {
     setIsPlaying(false);
   }
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        isPlaying ? stop() : start();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isPlaying])
 
   return (
     <div className='app'>
@@ -234,15 +272,10 @@ export default function App() {
           return (
             <div key={rowIndex} className="row">
               <VolumeSlider value={volumes[rowIndex]} onChange={(v) => changeVolume(rowIndex, v)} />
-              <select
-                className="instrument-select"
+              <InstrumentSelect
                 value={instruments[rowIndex]}
-                onChange={(e) => changeInstrument(rowIndex, e.target.value as InstrumentType)}
-              >
-                {INSTRUMENT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+                onChange={(v) => changeInstrument(rowIndex, v)}
+              />
               {row.map((cell, colIndex) => (
                 <div
                   key={colIndex}

@@ -55,24 +55,62 @@ input {
 }
 
 .instrument-select {
-    width: 100px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 135px;
     height: 40px;
     border-radius: 2px;
 
     outline: #dd4141 solid 0px;
     border: #ffb7b7 solid 2.5px;
-    color: #dd4141;
     background: #ffebeb;
-
-    font-size: 16px;
-    font-family: "DM Sans", sans-serif;
-    font-weight: 600;
 
     transition: .15s all;
 
-    appearance: none;
     text-align: center;
     cursor: pointer;
+}
+
+.instrument-select span {
+    color: #dd4141;
+    font-size: 14px;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+
+}
+
+.instrument-select span[data-dir="right"] {
+    animation: slide-from-right .25s ease-out;
+}
+
+.instrument-select span[data-dir="left"] {
+    animation: slide-from-left .25s ease-out;
+}
+
+@keyframes slide-from-right {
+    from { opacity: 0; transform: translateX(-14px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-from-left {
+    from { opacity: 0; transform: translateX(14px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.instrument-select button {
+    background: none;
+    transition: .15s all;
+}
+
+.instrument-select button:hover {
+    transform: scale(1.2);
+}
+
+.instrument-select svg {
+    color: #dd4141;
 }
 
 .instrument-select:hover {
