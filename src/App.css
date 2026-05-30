@@ -11,6 +11,10 @@ body {
     justify-content: center;
 }
 
+svg {
+    color: #1e1e21;
+}
+
 .app {
     display: flex;
     flex-direction: column;
@@ -128,17 +132,26 @@ input {
 }
 
 .volume-control {
+    position: relative;
     height: 40px;
     width: 120px;
     background-color: #e6eaf2;
     border-radius: 2px;
 
-    padding: 2.5px;
+    padding: 3px;
     box-sizing: border-box;
 
     cursor: pointer;
 
     transition: .15s all;
+}
+
+.volume-control svg {
+    position: absolute;
+    top: 50%;
+    transform: translate(25%, -50%);
+    color: #c4d3ea;
+    pointer-events: none;
 }
 
 .volume-control:hover {

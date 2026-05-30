@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import * as Tone from "tone";
-import { PlaySolid, PauseSolid, Xmark, Plus } from 'iconoir-react';
+import { PlaySolid, PauseSolid, Xmark, Plus, SoundHighSolid, SoundLowSolid, SoundMinSolid, SoundOffSolid } from 'iconoir-react';
 import "./App.css";
 
 const STEPS = 8
@@ -114,10 +114,12 @@ function useDrag(onChange: (val: number) => void) {
 
 function VolumeSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const { trackRef, handleMouseDown } = useDrag(onChange);
+  const iconSize = 20;
 
   return (
     <div className='volume-control' ref={trackRef} onMouseDown={handleMouseDown}>
       <div className='volume-indicator' style={{ width: `${value}%` }} />
+      {value > 60 ? <SoundHighSolid width={iconSize}/> : value > 25 ? <SoundLowSolid width={iconSize}/> : value > 0 ? <SoundMinSolid width={iconSize}/> : <SoundOffSolid width={iconSize}/>}
     </div>
   )
 }
