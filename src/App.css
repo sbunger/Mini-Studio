@@ -222,7 +222,7 @@ input {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-size: 16px;
+    font-size: 15px;
     color: #1e1e21;
 
     height: 40px;
@@ -233,7 +233,7 @@ input {
 }
 
 .bpm-label input[type="number"] {
-    font-size: 16px;
+    font-size: 15px;
     color: #1e1e21;
 
     width: 40px;
