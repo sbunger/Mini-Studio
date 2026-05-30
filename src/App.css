@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Jersey+10&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
 body {
-    font-family: "Jersey 10", sans-serif;
-    font-weight: 400;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
     font-style: normal;
     background: #fff5f5;
     min-height: 100vh;
@@ -19,20 +19,20 @@ body {
     padding: 2em;
 }
 
-h1 {
-    margin: 15px 5px;
-    font-size: 2em;
-    color: #dd4141;
-}
-
 button {
-    font-family: "Jersey 10", sans-serif;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
     border: none;
     cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 input {
-    font-family: "Jersey 10", sans-serif;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
     border: none;
 }
 
@@ -51,18 +51,18 @@ input {
 }
 
 .instrument-select {
-    width: 90px;
+    width: 100px;
     height: 40px;
     border-radius: 2px;
-    margin-right: 4px;
 
-    border: none;
-    outline: #ffb7b7 solid 2.5px;
+    outline: #dd4141 solid 0px;
+    border: #ffb7b7 solid 2.5px;
     color: #dd4141;
     background: #ffebeb;
 
-    font-size: 18px;
-    font-family: "Jersey 10", sans-serif;
+    font-size: 16px;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
 
     transition: .15s all;
 
@@ -111,6 +111,7 @@ input {
 }
 
 
+
 .remove-track {
     width: 40px;
     height: 40px;
@@ -119,22 +120,56 @@ input {
     background-color: #e6eaf2;
     color: #1e1e21;
 
-    font-size: 20px;
-    margin-left: 2px;
-
     transition: .15s all;
 }
 
 .remove-track:hover, .new-track:hover {
-    font-size: 23px;
     background-color: #dae1ec;
 }
 
+.volume-control {
+    height: 40px;
+    width: 120px;
+    background-color: #e6eaf2;
+    border-radius: 2px;
+
+    padding: 2.5px;
+    box-sizing: border-box;
+
+    cursor: pointer;
+
+    transition: .15s all;
+}
+
+.volume-control:hover {
+    background-color: #dae1ec;
+}
+
+.volume-control .volume-indicator {
+    height: 100%;
+    background-color: #fff5f5;
+    border-radius: 1px;
+
+    cursor: pointer;
+
+    transition: width .15s;
+}
+
+
+
+
+
+.end-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 8px;
+}
 
 .new-track {
-    font-size: 20px;
-
-    width: 100%;
+    width: 0;
+    flex: 1;
     height: 40px;
     border-radius: 2px;
 
@@ -146,62 +181,57 @@ input {
     transition: .15s all;
 }
 
-
-
-
-
-.controls {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.controls button {
-    margin: 5px;
-    font-size: 20px;
+.play {
+    height: 40px;
+    width: 40px;
     
-    background-color: #c0bcff;
+    background-color: #d1cdff;
     color: #1e1e21;
     border-radius: 2px;
-    padding: 2px 14px;
     transition: all .15s;
+
+    border: #a39cff solid 2.5px;
+    outline: #574de1 solid 0px;
 }
 
-.controls button:hover:not(:disabled) {
-    background: #7268ff;
-    color: #ffffff;
+.play:hover {
+    outline: #574de1 solid 2.5px;
 }
 
-.controls button:disabled {
-    background-color: #dae1ec;
-    cursor: default;
-    opacity: .7;
-}
+
+
+
 
 .bpm-label {
+    width: 120px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    font-size: 20px;
+    font-size: 16px;
     color: #1e1e21;
-    margin: 5px;
-    margin-left: 30px;
+
+    height: 40px;
+    padding: 2.5px;
+    background-color: #e6eaf2;
+    
+    border-radius: 2px;
 }
 
 .bpm-label input[type="number"] {
-  font-size: 20px;
-  color: #1e1e21;
-  background-color: #dae1ec;
-  border-radius: 2px;
-  width: 60px;
-  text-align: center;
+    font-size: 16px;
+    color: #1e1e21;
 
-  transition: .15s all;
+    width: 40px;
+    border-radius: 1.5px;
+    text-align: center;
+
+    transition: .15s all;
 }
 
 .bpm-label input[type="number"]:hover {
-  background-color: #c0bcff;
+  background-color: #dae1ec;
 }
 
 .bpm-label input[type="number"]:focus-visible {

@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import * as Tone from "tone";
+import { PlaySolid, PauseSolid, Xmark, Plus } from 'iconoir-react';
 import "./App.css";
 
 const STEPS = 8
@@ -71,15 +72,63 @@ function triggerSynth(synth: any, type: InstrumentType, time: number) {
   }
 }
 
+function sliderToDb(val: number) {
+  return (val / 100) * 30 - 30;
+}
+
 const emptyRow = () => Array(STEPS).fill(0);
 
 const initialPattern = [emptyRow(), emptyRow(), emptyRow()];
 const initalInstruments: InstrumentType[] = ['kick', 'snare', 'hat'];
 
+
+function useDrag(onChange: (val: number) => void) {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    const calc = (clientX: number) => {
+      const track = trackRef.current;
+      if (!track) return;
+      const { left, width } = track.getBoundingClientRect();
+      const val = Math.min(100, Math.max(0, ((clientX - left) / width) * 100));
+      onChange(Math.round(val));
+    };
+
+    calc(e.clientX);
+
+    const move = (e: MouseEvent) => calc(e.clientX);
+
+    const up = () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    };
+
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  };
+
+  return { trackRef, handleMouseDown };
+}
+
+function VolumeSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const { trackRef, handleMouseDown } = useDrag(onChange);
+
+  return (
+    <div className='volume-control' ref={trackRef} onMouseDown={handleMouseDown}>
+      <div className='volume-indicator' style={{ width: `${value}%` }} />
+    </div>
+  )
+}
+
+
 export default function App() {
   const [pattern, setPattern] = useState(initialPattern);
   const [instruments, setInstruments] = useState<InstrumentType[]>(initalInstruments);
   const [step, setStep] = useState(0);
+
+  const [volumes, setVolumes] = useState<number[]>([80, 40, 60])
   const [bpm, setBpm] = useState(120);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -94,6 +143,8 @@ export default function App() {
 
   useEffect(() => {
     synthsRef.current = initalInstruments.map((inst) => createSynth(inst));
+
+    synthsRef.current.forEach((s, i) => { s.volume.value = sliderToDb(volumes[i]); });
 
     Tone.Transport.scheduleRepeat((time) => {
       const currentStep = stepRef.current;
@@ -138,10 +189,16 @@ export default function App() {
     });
   };
 
+  const changeVolume = (rowIndex: number, value: number) => {
+    synthsRef.current[rowIndex].volume.value = sliderToDb(value);
+    setVolumes((prev) => { const copy = [...prev]; copy[rowIndex] = value; return copy; });
+  }
+
   const addTrack = () => {
     synthsRef.current = [...synthsRef.current, createSynth('kick')];
     setPattern((prev) => [...prev, emptyRow()]);
     setInstruments((prev) => [...prev, 'kick']);
+    setVolumes((prev) => [...prev, 80]);
   };
 
   const removeTrack = (rowIndex: number) => {
@@ -149,6 +206,7 @@ export default function App() {
     synthsRef.current = synthsRef.current.filter((_, i) => i !== rowIndex);
     setPattern((prev) => prev.filter((_, i) => i !== rowIndex));
     setInstruments((prev) => prev.filter((_, i) => i !== rowIndex));
+    setVolumes((prev) => prev.filter((_, i) => i !== rowIndex));
   }
 
   const start = async () => {
@@ -166,64 +224,63 @@ export default function App() {
     setIsPlaying(false);
   }
 
-  
+
   return (
     <div className='app'>
-      <h1>Mini Studio</h1>
-
       <div className="grid">
         {pattern.map((row, rowIndex) => {
-        return (
-          <div key={rowIndex} className="row">
-            <select
-              className="instrument-select"
-              value={instruments[rowIndex]}
-              onChange={(e) => changeInstrument(rowIndex, e.target.value as InstrumentType)}
-            >
-              {INSTRUMENT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+          return (
+            <div key={rowIndex} className="row">
+              <VolumeSlider value={volumes[rowIndex]} onChange={(v) => changeVolume(rowIndex, v)} />
+              <select
+                className="instrument-select"
+                value={instruments[rowIndex]}
+                onChange={(e) => changeInstrument(rowIndex, e.target.value as InstrumentType)}
+              >
+                {INSTRUMENT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              {row.map((cell, colIndex) => (
+                <div
+                  key={colIndex}
+                  onClick={() => toggleStep(rowIndex, colIndex)}
+                  className={`cell ${cell ? 'active' : ''} ${colIndex === step ? 'playing' : ''}`}
+                />
               ))}
-            </select>
-            {row.map((cell, colIndex) => (
-              <div
-                key={colIndex}
-                onClick={() => toggleStep(rowIndex, colIndex)}
-                className={`cell ${cell ? 'active' : ''} ${colIndex === step ? 'playing' : ''}`}
-              />
-            ))}
-            <button className='remove-track' onClick={() => removeTrack(rowIndex)}>
-              x
-            </button>
+              <button className='remove-track' onClick={() => removeTrack(rowIndex)}>
+                <Xmark color="currentColor" width={24} />
+              </button>
+
+            </div>
+          );
+        })}
+
+        <div className='end-container'>
+          <div className='bpm-label'>
+            <p>BPM:</p>
+            <input
+              type="number"
+              value={bpm}
+              onChange={(e) => {
+                setBpm(+e.target.value);
+              }}
+              onBlur={(e) => {
+                const val = Math.min(240, Math.max(60, +e.target.value));
+                setBpm(val);
+                Tone.Transport.bpm.value = val;
+              }}
+            />
           </div>
-        );
-      })}
+          
+          <button className="new-track" onClick={() => addTrack()}>
+            <Plus color="currentColor" width={24} />
+          </button>
 
-      <button className="new-track" onClick={() => addTrack()}>
-        +
-      </button>
-
-    </div>
-
-
-      <div className='controls'>
-        <button onClick={start} disabled={isPlaying}>Play</button>
-        <button onClick={stop} disabled={!isPlaying}>Stop</button>
-
-        <label className='bpm-label'>
-          <p>BPM:</p>
-          <input
-            type="number"
-            value={bpm}
-            onChange={(e) => {
-              setBpm(+e.target.value);
-            }}
-            onBlur={(e) => {
-              const val = Math.min(240, Math.max(60, +e.target.value));
-              setBpm(val);
-              Tone.Transport.bpm.value = val;
-            }}
-          />
-        </label>
+          <button className='play' onClick={isPlaying ? stop : start}>
+            {isPlaying ? <PauseSolid color="currentColor" width={24} /> : <PlaySolid color="currentColor" width={24} />}
+          </button>
+        </div>
       </div>
     </div>
   )
