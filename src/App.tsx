@@ -183,7 +183,10 @@ function Dial({ value, onChange, label }: { value: number; onChange: (v: number)
     <div className='dial-wrap'>
       <Tooltip text={`${label}: ${value}`} direction='top'>
         <div className='dial' onMouseDown={handleMouseDown}>
-          <div className='dial-indicator' style={{ transform: `rotate(${rotation}deg)` }}/>
+          <div className='dial-indicator' style={{ transform: `rotate(${rotation}deg)` }}>
+            <div className='dial-top'/>
+            <div className='dial-bottom'/>
+          </div>
         </div>
       </Tooltip>
     </div>
@@ -307,7 +310,12 @@ export default function App() {
   const changeInstrument = (rowIndex: number, value: InstrumentType) => {
     const old = synthsRef.current[rowIndex]
     if (old) old.dispose();
-    synthsRef.current[rowIndex] = createSynth(value);
+
+    const synth = createSynth(value);
+    synth.disconnect();
+    synth.connect(fxChainsRef.current[rowIndex].delay);
+    synth.volume.value = sliderToDb(volumes[rowIndex]);
+    synthsRef.current[rowIndex] = synth;
 
     setInstruments((prev) => {
       const copy = [...prev];

@@ -10,6 +10,8 @@ body {
     align-items: center;
     justify-content: center;
 
+    color: #1e1e21;
+
     margin: 0;
     padding: 0;
 }
@@ -335,7 +337,7 @@ input[type="number"] { -moz-appearance: textfield; }
     background-color: #ffffff60;
     backdrop-filter: blur(5px);
 
-    filter: drop-shadow(0 4px 6px #c4d3ea7b);
+    filter: drop-shadow(0 4px 6px #1e1e2113);
     
     font-size: 12px;
     padding: 4px 8px;
@@ -394,6 +396,8 @@ input[type="number"] { -moz-appearance: textfield; }
     z-index: 10;
 
     background-color: #dae1ec;
+    
+    box-shadow: 0 4px 6px #1e1e2113;
     border-radius: 2px;
 
     padding: 20px;
@@ -450,12 +454,19 @@ input[type="number"] { -moz-appearance: textfield; }
     position: absolute;
     height: 43px;
     width: 3px;
-    border-radius: 2px;
-    background-color: #1e1e21;
+    display: flex;
+    flex-direction: column;
 
     bottom: 50%;
     left: calc(50% - 1.5px);
     transform-origin: bottom center;
 
     transition: .15s all;
+}
+
+.dial-top {
+    width: 100%;
+    height: 50%;
+    border-radius: 2px;
+    background-color: #1e1e21;
 }
