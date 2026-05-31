@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import * as Tone from "tone";
-import { PlaySolid, PauseSolid, Xmark, Plus, SoundHighSolid, SoundLowSolid, SoundMinSolid, SoundOffSolid, NavArrowLeft, NavArrowRight } from 'iconoir-react';
+import { PlaySolid, PauseSolid, Xmark, Plus, SoundHighSolid, SoundLowSolid, SoundMinSolid, SoundOffSolid, NavArrowLeft, NavArrowRight, Menu, IosSettings } from 'iconoir-react';
 import "./App.css";
 
 const STEPS = 8
@@ -14,6 +14,15 @@ const INSTRUMENT_OPTIONS = [
 ];
 
 type InstrumentType = 'kick' | 'snare' | 'hat' | 'tom' | 'openhat';
+
+type Effects = {
+  reverb: number;
+  distortion: number;
+  delay: number;
+};
+
+
+
 
 function createSynth(type: InstrumentType): Tone.MembraneSynth | Tone.NoiseSynth | Tone.MetalSynth {
   switch (type) {
@@ -72,6 +81,20 @@ function triggerSynth(synth: any, type: InstrumentType, time: number) {
   }
 }
 
+
+function addEffects(fx: Effects) {
+  const reverb = new Tone.Reverb({ decay: 2, wet: fx.reverb / 100});
+  const distortion = new Tone.Distortion({ distortion: fx.distortion / 100, wet: fx.distortion > 0 ? 1 : 0});
+  const delay = new Tone.FeedbackDelay({ delayTime: "16n", feedback: 0.3, wet: fx.delay / 100});
+  reverb.toDestination();
+  distortion.connect(reverb);
+  delay.connect(distortion);
+  return { reverb, distortion, delay };
+}
+
+
+
+
 function sliderToDb(val: number) {
   return (val / 100) * 30 - 30;
 }
@@ -80,6 +103,7 @@ const emptyRow = () => Array(STEPS).fill(0);
 
 const initialPattern = [emptyRow(), emptyRow(), emptyRow()];
 const initalInstruments: InstrumentType[] = ['kick', 'snare', 'hat'];
+const initialEffects: Effects = { reverb: 0, distortion: 0, delay: 0 };
 
 
 function useDrag(onChange: (val: number) => void) {
@@ -126,6 +150,58 @@ function VolumeSlider({ value, onChange }: { value: number; onChange: (v: number
   )
 }
 
+function Dial({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
+  const isDragging = useRef(false);
+  const startY = useRef(0);
+  const startVal = useRef(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    startY.current = e.clientY;
+    startVal.current = value;
+
+    const move = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      e.preventDefault();
+      const delta = (startY.current - e.clientY) * 1.2;
+      onChange(Math.min(100, Math.max(0, Math.round(startVal.current + delta))));
+    };
+
+    const up = () => {
+      isDragging.current = false;
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    };
+
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  };
+
+  const rotation = -135 + (value / 100) * 270;
+
+  return (
+    <div className='dial-wrap'>
+      <Tooltip text={`${label}: ${value}`} direction='top'>
+        <div className='dial' onMouseDown={handleMouseDown}>
+          <div className='dial-indicator' style={{ transform: `rotate(${rotation}deg)` }}/>
+        </div>
+      </Tooltip>
+    </div>
+  )
+}
+
+function EffectsPanel({ fx, onChange, onClose, isClosing }: { fx: Effects; onChange: (k: keyof Effects, v: number) => void; onClose: () => void, isClosing: boolean }) {
+  return (
+    <div className={`effects-panel ${isClosing ? 'effects-panel-closing' : ''}`}>
+      <div className="effects-dials">
+        <Dial value={fx.reverb} onChange={v => onChange('reverb', v)} label="Reverb" />
+        <Dial value={fx.distortion} onChange={v => onChange('distortion', v)} label="Distort" />
+        <Dial value={fx.delay} onChange={v => onChange('delay', v)} label="Delay" />
+      </div>
+    </div>
+  );
+}
+
 function InstrumentSelect({ value, onChange }: { value: InstrumentType; onChange: (v: InstrumentType) => void}) {
   const dirRef = useRef<'left' | 'right'>('right');
   const currentIndex = INSTRUMENT_OPTIONS.findIndex(o => o.value === value);
@@ -166,6 +242,10 @@ export default function App() {
   const [instruments, setInstruments] = useState<InstrumentType[]>(initalInstruments);
   const [step, setStep] = useState(0);
 
+  const [effects, setEffects] = useState<Effects[]>([initialEffects, initialEffects, initialEffects]);
+  const [openEffects, setOpenEffects] = useState<number | null>(null);
+  const [closingEffects, setClosingEffects] = useState<number | null>(null);
+
   const [volumes, setVolumes] = useState<number[]>([80, 40, 60])
   const [bpm, setBpm] = useState(120);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -175,14 +255,24 @@ export default function App() {
   const startedRef = useRef(false);
   const instrumentsRef = useRef(instruments);
   const synthsRef = useRef<any[]>([]);
+  const effectsRef = useRef<(Tone.Reverb | null)[][]>([]);
+  const openEffectsRef = useRef(openEffects);
+  const fxChainsRef = useRef<{ reverb: Tone.Reverb; distortion: Tone.Distortion; delay: Tone.FeedbackDelay }[]>([]);
 
   useEffect(() => { patternRef.current = pattern; }, [pattern]);
   useEffect(() => { instrumentsRef.current = instruments; }, [instruments]);
+  useEffect(() => { openEffectsRef.current = openEffects; }, [openEffects]);
 
   useEffect(() => {
-    synthsRef.current = initalInstruments.map((inst) => createSynth(inst));
-
-    synthsRef.current.forEach((s, i) => { s.volume.value = sliderToDb(volumes[i]); });
+    synthsRef.current = initalInstruments.map((inst, i) => {
+      const fx = addEffects(effects[i]);
+      fxChainsRef.current[i] = fx;
+      const synth = createSynth(inst);
+      synth.disconnect();
+      synth.connect(fx.delay);
+      synth.volume.value = sliderToDb(volumes[i]);
+      return synth;
+    });
 
     Tone.Transport.scheduleRepeat((time) => {
       const currentStep = stepRef.current;
@@ -227,10 +317,47 @@ export default function App() {
     });
   };
 
+  const changeEffect = (rowIndex: number, key: keyof Effects, value: number) => {
+    const fx = fxChainsRef.current[rowIndex];
+    if (!fx) return;
+    if (key === 'reverb') fx.reverb.wet.value = value / 100;
+    if (key === 'distortion') { fx.distortion.wet.value = value > 0 ? 1 : 0; fx.distortion.distortion = value / 100; }
+    if (key === 'delay') fx.delay.wet.value = value / 100;
+    setEffects(prev => {
+      const copy = [...prev];
+      copy[rowIndex] = { ...copy[rowIndex], [key]: value };
+      return copy;
+    })
+  };
+
+  const closeEffects = () => {
+    const current = openEffectsRef.current;
+      if (current === null) return;
+      setClosingEffects(current);
+      setTimeout(() => {
+        setOpenEffects(null);
+        setClosingEffects(null);
+      }, 150);
+  };
+
+  useEffect(() => {
+    if (openEffects === null) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.effects-panel') && !target.closest('.track-settings')) {
+        closeEffects();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [openEffects]);
+
   const changeVolume = (rowIndex: number, value: number) => {
     synthsRef.current[rowIndex].volume.value = sliderToDb(value);
     setVolumes((prev) => { const copy = [...prev]; copy[rowIndex] = value; return copy; });
-  }
+  };
 
   const addTrack = () => {
     synthsRef.current = [...synthsRef.current, createSynth('kick')];
@@ -283,10 +410,12 @@ export default function App() {
               <Tooltip text={volumes[rowIndex] === 0 ? 'Muted' : `${volumes[rowIndex]}`} direction='left'>
               <VolumeSlider value={volumes[rowIndex]} onChange={(v) => changeVolume(rowIndex, v)} />
               </Tooltip>
+              
               <InstrumentSelect
                 value={instruments[rowIndex]}
                 onChange={(v) => changeInstrument(rowIndex, v)}
               />
+
               {row.map((cell, colIndex) => (
                 <div
                   key={colIndex}
@@ -294,6 +423,29 @@ export default function App() {
                   className={`cell ${cell ? 'active' : ''} ${colIndex === step ? 'playing' : ''}`}
                 />
               ))}
+
+              <div style={{ position: 'relative' }}>
+                <Tooltip text='Effects' direction='left'>
+                  <button className='track-settings' onClick={() => {
+                    if (openEffects === rowIndex) {
+                      closeEffects();
+                    } else {
+                      setOpenEffects(rowIndex);
+                    }
+                  }}>
+                    <Menu color="currentColor" width={24} />
+                  </button>
+                </Tooltip>
+                {(openEffects === rowIndex || closingEffects === rowIndex) &&  (
+                  <EffectsPanel
+                    fx={effects[rowIndex]}
+                    onChange={(k, v) => changeEffect(rowIndex, k, v)}
+                    onClose={() => closeEffects()}
+                    isClosing={closingEffects === rowIndex}
+                  />
+                )}
+              </div>
+
               <Tooltip text='Remove Track' direction='right'>
                 <button className='remove-track' onClick={() => removeTrack(rowIndex)}>
                   <Xmark color="currentColor" width={24} />
@@ -323,6 +475,12 @@ export default function App() {
           <Tooltip text='New Track' direction='bottom'>
             <button className="new-track" onClick={() => addTrack()}>
               <Plus color="currentColor" width={24} />
+            </button>
+          </Tooltip>
+
+          <Tooltip text='Options' direction='bottom'>
+            <button className='settings'>
+              <IosSettings color="currentColor" width={24}/>
             </button>
           </Tooltip>
 
