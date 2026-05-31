@@ -360,18 +360,30 @@ export default function App() {
   };
 
   const addTrack = () => {
-    synthsRef.current = [...synthsRef.current, createSynth('kick')];
+    const fx = addEffects(initialEffects);
+    fxChainsRef.current = [...fxChainsRef.current, fx];
+    const synth = createSynth('kick')
+    synth.disconnect();
+    synth.connect(fx.delay);
+    synth.volume.value = sliderToDb(80);
+
+    synthsRef.current = [...synthsRef.current, synth];
     setPattern((prev) => [...prev, emptyRow()]);
     setInstruments((prev) => [...prev, 'kick']);
     setVolumes((prev) => [...prev, 80]);
+    setEffects((prev) => [...prev, initialEffects]);
   };
 
   const removeTrack = (rowIndex: number) => {
+    const fx = fxChainsRef.current[rowIndex];
+    if (fx) { fx.reverb.dispose(); fx.distortion.dispose(); fx.delay.dispose(); }
+    fxChainsRef.current = fxChainsRef.current.filter((_, i) => i !== rowIndex);
     synthsRef.current[rowIndex]?.dispose();
     synthsRef.current = synthsRef.current.filter((_, i) => i !== rowIndex);
     setPattern((prev) => prev.filter((_, i) => i !== rowIndex));
     setInstruments((prev) => prev.filter((_, i) => i !== rowIndex));
     setVolumes((prev) => prev.filter((_, i) => i !== rowIndex));
+    setEffects((prev) => prev.filter((_, i) => i !== rowIndex));
   }
 
   const start = async () => {
