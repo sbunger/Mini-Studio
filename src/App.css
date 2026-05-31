@@ -156,8 +156,6 @@ input {
     outline: #574de1 solid 2.5px;
 }
 
-
-
 .remove-track, .track-settings, .settings {
     width: 40px;
     height: 40px;
@@ -169,6 +167,18 @@ input {
     transition: .15s all;
 }
 
+.remove-track svg, .track-settings svg, .settings svg, .new-track svg {
+    filter: drop-shadow(0 2px 1px #acbed8);
+}
+
+.play svg {
+    filter: drop-shadow(0 2px 1px #7268ff65);
+}
+
+.instrument-select svg {
+    filter: drop-shadow(0 2px 1px #dd41416d);
+}
+
 .remove-track:hover, .new-track:hover, .track-settings:hover, .settings:hover {
     background-color: #dae1ec;
 }
@@ -176,7 +186,7 @@ input {
 .volume-control {
     position: relative;
     height: 40px;
-    width: 100px;
+    width: 120px;
     background-color: #e6eaf2;
     border-radius: 2px;
 
@@ -203,6 +213,7 @@ input {
 .volume-control .volume-indicator {
     height: 100%;
     background-color: #fff5f5;
+    filter: drop-shadow(0 -1px 2px #fff5f58d) drop-shadow(0 1px 2px #c4d3ea);
     border-radius: 1px;
 
     cursor: pointer;
@@ -262,17 +273,17 @@ input {
 
 
 .bpm-label {
-    width: 100px;
+    width: 120px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: 8px;
     font-size: 14px;
     color: #1e1e21;
 
     height: 40px;
-    padding: 2.5px;
+    padding: 10px;
     background-color: #e6eaf2;
     
     border-radius: 2px;
@@ -282,6 +293,8 @@ input {
     font-size: 14px;
     color: #1e1e21;
     background-color: #fff5f5;
+
+    filter: drop-shadow(0 -1px 2px #fff5f58d) drop-shadow(0 1px 2px #c4d3ea);
 
     width: 30px;
     border-radius: 1.5px;
@@ -422,7 +435,7 @@ input[type="number"] { -moz-appearance: textfield; }
 
     transition: .15s all;
 
-    filter: drop-shadow(0 10px 10px #c4d3ea);
+    filter: drop-shadow(0 -10px 10px #fff5f5b3) drop-shadow(0 10px 10px #c4d3ea);
 }
 
 .dial-wrap {
