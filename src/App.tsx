@@ -190,7 +190,7 @@ function Dial({ value, onChange, label }: { value: number; onChange: (v: number)
   )
 }
 
-function EffectsPanel({ fx, onChange, onClose, isClosing }: { fx: Effects; onChange: (k: keyof Effects, v: number) => void; onClose: () => void, isClosing: boolean }) {
+function EffectsPanel({ fx, onChange, isClosing }: { fx: Effects; onChange: (k: keyof Effects, v: number) => void; onClose: () => void, isClosing: boolean }) {
   return (
     <div className={`effects-panel ${isClosing ? 'effects-panel-closing' : ''}`}>
       <div className="effects-dials">
@@ -255,7 +255,6 @@ export default function App() {
   const startedRef = useRef(false);
   const instrumentsRef = useRef(instruments);
   const synthsRef = useRef<any[]>([]);
-  const effectsRef = useRef<(Tone.Reverb | null)[][]>([]);
   const openEffectsRef = useRef(openEffects);
   const fxChainsRef = useRef<{ reverb: Tone.Reverb; distortion: Tone.Distortion; delay: Tone.FeedbackDelay }[]>([]);
 
