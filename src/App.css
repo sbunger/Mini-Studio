@@ -4,7 +4,7 @@ body {
     font-family: "DM Sans", sans-serif;
     font-weight: 600;
     font-style: normal;
-    background: #fff5f5;
+    background: #fff5f8;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -70,9 +70,9 @@ input {
     height: 40px;
     border-radius: 2px;
 
-    outline: #dd4141 solid 0px;
-    border: #ffb7b7 solid 2.5px;
-    background: #ffebeb;
+    outline: #e05c8a solid 0px;
+    border: #f9b0cb solid 2.5px;
+    background: #fde8f1;
 
     transition: .15s all;
 
@@ -81,7 +81,7 @@ input {
 }
 
 .instrument-select span {
-    color: #dd4141;
+    color: #e05c8a;
     font-size: 14px;
     font-family: "DM Sans", sans-serif;
     font-weight: 600;
@@ -116,11 +116,11 @@ input {
 }
 
 .instrument-select svg {
-    color: #dd4141;
+    color: #e05c8a;
 }
 
 .instrument-select:hover {
-    outline: #dd4141 solid 2.5px;
+    outline: #e05c8a solid 2.5px;
 }
 
 
@@ -129,13 +129,13 @@ input {
     width: 60px;
     height: 40px;
 
-    background-color: #ffb7b7;
+    background-color: #f9b0cb;
     border: none;
     border-radius: 2px;
 
     transition: all .15s;
 
-    outline: #dd4141 solid 0px;
+    outline: #e05c8a solid 0px;
     cursor: pointer;
 }
 
@@ -144,18 +144,18 @@ input {
 }
 
 .cell.active {
-    background-color: #ff7171;
-    outline: #dd4141 solid 2.5px;
+    background-color: #f2789f;
+    outline: #e05c8a solid 2.5px;
 }
  
 .cell.playing {
-    background-color: #c0bcff;
-    outline: #574de1 solid 0px;
+    background-color: #91ddd7;
+    outline: #1f9688 solid 0px;
 }
  
 .cell.playing.active {
-    background-color: #7268ff;
-    outline: #574de1 solid 2.5px;
+    background-color: #2db8a8;
+    outline: #1f9688 solid 2.5px;
 }
 
 .remove-track, .track-settings, .settings {
@@ -174,11 +174,11 @@ input {
 }
 
 .play svg {
-    filter: drop-shadow(0 2px 1px #7268ff65);
+    filter: drop-shadow(0 2px 1px #2db8a865);
 }
 
 .instrument-select svg {
-    filter: drop-shadow(0 2px 1px #dd41416d);
+    filter: drop-shadow(0 2px 1px #e05c8a6d);
 }
 
 .remove-track:hover, .new-track:hover, .track-settings:hover, .settings:hover {
@@ -214,8 +214,8 @@ input {
 
 .volume-control .volume-indicator {
     height: 100%;
-    background-color: #fff5f5;
-    filter: drop-shadow(0 -1px 2px #fff5f58d) drop-shadow(0 1px 2px #c4d3ea);
+    background-color: #fff5f8;
+    filter: drop-shadow(0 -1px 2px #fff5f88d) drop-shadow(0 1px 2px #c4d3ea);
     border-radius: 1px;
 
     cursor: pointer;
@@ -257,17 +257,17 @@ input {
     height: 40px;
     width: 40px;
     
-    background-color: #d1cdff;
+    background-color: #b2ebe7;
     color: #1e1e21;
     border-radius: 2px;
     transition: all .15s;
 
-    border: #a39cff solid 2.5px;
-    outline: #574de1 solid 0px;
+    border: #6dcec6 solid 2.5px;
+    outline: #1f9688 solid 0px;
 }
 
 .play:hover {
-    outline: #574de1 solid 2.5px;
+    outline: #1f9688 solid 2.5px;
 }
 
 
@@ -294,9 +294,9 @@ input {
 .bpm-label input[type="number"] {
     font-size: 14px;
     color: #1e1e21;
-    background-color: #fff5f5;
+    background-color: #fff5f8;
 
-    filter: drop-shadow(0 -1px 2px #fff5f58d) drop-shadow(0 1px 2px #c4d3ea);
+    filter: drop-shadow(0 -1px 2px #fff5f88d) drop-shadow(0 1px 2px #c4d3ea);
 
     width: 30px;
     border-radius: 1.5px;
@@ -431,7 +431,7 @@ input[type="number"] { -moz-appearance: textfield; }
     height: 80px;
     width: 80px;
     border-radius: 50px;
-    background-color: #fff5f5;
+    background-color: #fff5f8;
 
     position: relative;
 
@@ -439,7 +439,7 @@ input[type="number"] { -moz-appearance: textfield; }
 
     transition: .15s all;
 
-    filter: drop-shadow(0 -10px 10px #fff5f5b3) drop-shadow(0 10px 10px #c4d3ea);
+    filter: drop-shadow(0 -10px 10px #fff5f8b3) drop-shadow(0 10px 10px #c4d3ea);
 }
 
 .dial-wrap {
