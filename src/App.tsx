@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import * as Tone from "tone";
 import { PlaySolid, PauseSolid, Xmark, Plus, Menu, IosSettings } from 'iconoir-react';
 import "./App.css";
@@ -7,7 +7,6 @@ import { createSynth, triggerSynth, addEffects, sliderToDb } from './audio';
 import { STEPS, initialEffects, emptyRow, InstrumentType, Effects } from './types';
 import { Tooltip } from './components/Tooltip';
 import { VolumeSlider } from './components/VolumeSlider';
-import { Dial } from './components/Dial';
 import { EffectsPanel } from './components/EffectsPanel';
 import { InstrumentSelect } from './components/InstrumentSelect';
 
