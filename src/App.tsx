@@ -1,243 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react'
 import * as Tone from "tone";
-import { PlaySolid, PauseSolid, Xmark, Plus, SoundHighSolid, SoundLowSolid, SoundMinSolid, SoundOffSolid, NavArrowLeft, NavArrowRight, Menu, IosSettings } from 'iconoir-react';
+import { PlaySolid, PauseSolid, Xmark, Plus, Menu, IosSettings } from 'iconoir-react';
 import "./App.css";
 
-const STEPS = 8
+import { createSynth, triggerSynth, addEffects, sliderToDb } from './audio';
+import { STEPS, initialEffects, emptyRow, InstrumentType, Effects } from './types';
+import { Tooltip } from './components/Tooltip';
+import { VolumeSlider } from './components/VolumeSlider';
+import { Dial } from './components/Dial';
+import { EffectsPanel } from './components/EffectsPanel';
+import { InstrumentSelect } from './components/InstrumentSelect';
 
-const INSTRUMENT_OPTIONS = [
-  { value: 'kick', label: 'Kick' },
-  { value: 'snare', label: 'Snare' },
-  { value: 'hat', label: 'Hihat' },
-  { value: 'tom', label: 'Tom' },
-  { value: 'openhat', label: 'Open Hat' },
-];
-
-type InstrumentType = 'kick' | 'snare' | 'hat' | 'tom' | 'openhat';
-
-type Effects = {
-  reverb: number;
-  distortion: number;
-  delay: number;
-};
-
-
-
-
-function createSynth(type: InstrumentType): Tone.MembraneSynth | Tone.NoiseSynth | Tone.MetalSynth {
-  switch (type) {
-    case 'kick':
-      return new Tone.MembraneSynth({
-        pitchDecay: 0.05,
-        octaves: 6,
-        envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.1 },
-      }).toDestination();
-
-    case 'snare':
-      return new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.05 },
-      }).toDestination();
-
-    case 'hat':
-      return new Tone.MetalSynth({
-        envelope: { attack: 0.001, decay: 0.05, release: 0.01 },
-        harmonicity: 5.1,
-        modulationIndex: 32,
-        resonance: 4000,
-        octaves: 1.5,
-      }).toDestination();
-
-    case 'tom':
-      return new Tone.MembraneSynth({
-        pitchDecay: 0.08,
-        octaves: 4,
-        envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.1 },
-      }).toDestination();
-
-    case 'openhat':
-      return new Tone.MetalSynth({
-        envelope: { attack: 0.001, decay: 0.8, release: 0.2 },
-        harmonicity: 5.1,
-        modulationIndex: 16,
-        resonance: 3500,
-        octaves: 0.5,
-      }).toDestination();
-
-    default:
-      return new Tone.MembraneSynth().toDestination();
-  }
-}
-
-
-function triggerSynth(synth: any, type: InstrumentType, time: number) {
-  switch (type) {
-    case 'kick': synth.triggerAttackRelease("C2", "8n", time); break;
-    case 'tom': synth.triggerAttackRelease('G2', '8n', time); break;
-    case 'snare': synth.triggerAttackRelease("8n", time); break;
-    case 'hat': synth.triggerAttackRelease("16n", time); break;
-    case 'openhat': synth.triggerAttackRelease("8n", time); break;
-    default: synth.triggerAttackRelease('C2', '8n', time);
-  }
-}
-
-
-function addEffects(fx: Effects) {
-  const reverb = new Tone.Reverb({ decay: 2, wet: fx.reverb / 100});
-  const distortion = new Tone.Distortion({ distortion: fx.distortion / 100, wet: fx.distortion > 0 ? 1 : 0});
-  const delay = new Tone.FeedbackDelay({ delayTime: "16n", feedback: 0.3, wet: fx.delay / 100});
-  reverb.toDestination();
-  distortion.connect(reverb);
-  delay.connect(distortion);
-  return { reverb, distortion, delay };
-}
-
-
-
-
-function sliderToDb(val: number) {
-  return (val / 100) * 30 - 30;
-}
-
-const emptyRow = () => Array(STEPS).fill(0);
 
 const initialPattern = [emptyRow(), emptyRow(), emptyRow()];
 const initalInstruments: InstrumentType[] = ['kick', 'snare', 'hat'];
-const initialEffects: Effects = { reverb: 0, distortion: 0, delay: 0 };
-
-
-function useDrag(onChange: (val: number) => void) {
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    const calc = (clientX: number) => {
-      const track = trackRef.current;
-      if (!track) return;
-      const { left, width } = track.getBoundingClientRect();
-      const val = Math.min(100, Math.max(0, ((clientX - left) / width) * 100));
-      onChange(Math.round(val));
-    };
-
-    calc(e.clientX);
-
-    const move = (e: MouseEvent) => calc(e.clientX);
-
-    const up = () => {
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
-    };
-
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
-  };
-
-  return { trackRef, handleMouseDown };
-}
-
-
-
-function VolumeSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const { trackRef, handleMouseDown } = useDrag(onChange);
-  const iconSize = 20;
-
-  return (
-    <div className='volume-control' ref={trackRef} onMouseDown={handleMouseDown}>
-      <div className='volume-indicator' style={{ width: `${value}%` }} />
-      {value > 60 ? <SoundHighSolid width={iconSize}/> : value > 25 ? <SoundLowSolid width={iconSize}/> : value > 0 ? <SoundMinSolid width={iconSize}/> : <SoundOffSolid width={iconSize}/>}
-    </div>
-  )
-}
-
-function Dial({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
-  const isDragging = useRef(false);
-  const startY = useRef(0);
-  const startVal = useRef(0);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    startY.current = e.clientY;
-    startVal.current = value;
-
-    const move = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      e.preventDefault();
-      const delta = (startY.current - e.clientY) * 1.2;
-      onChange(Math.min(100, Math.max(0, Math.round(startVal.current + delta))));
-    };
-
-    const up = () => {
-      isDragging.current = false;
-      document.removeEventListener('mousemove', move);
-      document.removeEventListener('mouseup', up);
-    };
-
-    document.addEventListener('mousemove', move);
-    document.addEventListener('mouseup', up);
-  };
-
-  const rotation = -135 + (value / 100) * 270;
-
-  return (
-    <div className='dial-wrap'>
-      <Tooltip text={`${label}: ${value}`} direction='top'>
-        <div className='dial' onMouseDown={handleMouseDown}>
-          <div className='dial-indicator' style={{ transform: `rotate(${rotation}deg)` }}>
-            <div className='dial-top'/>
-            <div className='dial-bottom'/>
-          </div>
-        </div>
-      </Tooltip>
-    </div>
-  )
-}
-
-function EffectsPanel({ fx, onChange, isClosing }: { fx: Effects; onChange: (k: keyof Effects, v: number) => void; onClose: () => void, isClosing: boolean }) {
-  return (
-    <div className={`effects-panel ${isClosing ? 'effects-panel-closing' : ''}`}>
-      <div className="effects-dials">
-        <Dial value={fx.reverb} onChange={v => onChange('reverb', v)} label="Reverb" />
-        <Dial value={fx.distortion} onChange={v => onChange('distortion', v)} label="Distort" />
-        <Dial value={fx.delay} onChange={v => onChange('delay', v)} label="Delay" />
-      </div>
-    </div>
-  );
-}
-
-function InstrumentSelect({ value, onChange }: { value: InstrumentType; onChange: (v: InstrumentType) => void}) {
-  const dirRef = useRef<'left' | 'right'>('right');
-  const currentIndex = INSTRUMENT_OPTIONS.findIndex(o => o.value === value);
-  
-  const prev = () => {
-    dirRef.current = 'left';
-    const i = (currentIndex - 1 + INSTRUMENT_OPTIONS.length) % INSTRUMENT_OPTIONS.length;
-    onChange(INSTRUMENT_OPTIONS[i].value as InstrumentType);
-  };
-
-  const next = () => {
-    dirRef.current = 'right';
-    const i = (currentIndex + 1) % INSTRUMENT_OPTIONS.length;
-    onChange(INSTRUMENT_OPTIONS[i].value as InstrumentType);
-  }
-
-  return (
-    <div className='instrument-select'>
-      <button onClick={prev}><NavArrowLeft/></button>
-        <span key={value} data-dir={dirRef.current}>{INSTRUMENT_OPTIONS[currentIndex].label}</span>
-      <button onClick={next}><NavArrowRight/></button>
-    </div>
-  )
-}
-
-function Tooltip({ text, children, direction = 'top' }: { text: string; children: React.ReactNode; direction?: 'top' | 'bottom' | 'left' | 'right' }) {
-  return (
-    <div className='tooltip-wrap'>
-      {children}
-      <span className={`tooltip tooltip-${direction}`}>{text}</span>
-    </div>
-  );
-}
 
 
 export default function App() {
@@ -426,9 +202,7 @@ export default function App() {
         {pattern.map((row, rowIndex) => {
           return (
             <div key={rowIndex} className="row">
-              <Tooltip text={volumes[rowIndex] === 0 ? 'Muted' : `${volumes[rowIndex]}`} direction='left'>
               <VolumeSlider value={volumes[rowIndex]} onChange={(v) => changeVolume(rowIndex, v)} />
-              </Tooltip>
               
               <InstrumentSelect
                 value={instruments[rowIndex]}
