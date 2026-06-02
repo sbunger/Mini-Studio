@@ -4,7 +4,7 @@ import { PlaySolid, PauseSolid, Xmark, Plus, Menu, IosSettings } from 'iconoir-r
 import "./App.css";
 
 import { createSynth, triggerSynth, addEffects, sliderToDb } from './audio';
-import { STEPS, initialEffects, emptyRow, InstrumentType, Effects } from './types';
+import { STEP_OPTIONS, initialEffects, emptyRow, InstrumentType, Effects, DEFAULT_STEPS } from './types';
 import { Tooltip } from './components/Tooltip';
 import { VolumeSlider } from './components/VolumeSlider';
 import { EffectsPanel } from './components/EffectsPanel';
@@ -18,6 +18,7 @@ const initalInstruments: InstrumentType[] = ['kick', 'snare', 'hat'];
 export default function App() {
   const [pattern, setPattern] = useState(initialPattern);
   const [instruments, setInstruments] = useState<InstrumentType[]>(initalInstruments);
+  const [steps, setSteps] = useState<number[]>([8, 8, 8]);
   const [step, setStep] = useState(0);
 
   const [effects, setEffects] = useState<Effects[]>([initialEffects, initialEffects, initialEffects]);
@@ -28,6 +29,7 @@ export default function App() {
   const [bpm, setBpm] = useState(120);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  const stepsRef = useRef(steps);
   const stepRef = useRef(0);
   const patternRef = useRef(pattern);
   const startedRef = useRef(false);
@@ -39,6 +41,7 @@ export default function App() {
   useEffect(() => { patternRef.current = pattern; }, [pattern]);
   useEffect(() => { instrumentsRef.current = instruments; }, [instruments]);
   useEffect(() => { openEffectsRef.current = openEffects; }, [openEffects]);
+  useEffect(() => { stepsRef.current = steps; }, [steps]);
 
   useEffect(() => {
     synthsRef.current = initalInstruments.map((inst, i) => {
@@ -52,21 +55,25 @@ export default function App() {
     });
 
     Tone.Transport.scheduleRepeat((time) => {
-      const currentStep = stepRef.current;
-      const currentPattern = patternRef.current;
-      const currentInstruments = instrumentsRef.current;
+    const currentSteps = stepsRef.current;
+    const currentPattern = patternRef.current;
+    const currentInstruments = instrumentsRef.current;
 
-      currentPattern.forEach((row, rowIndex) => {
-        if (row[currentStep]) {
-          const synth = synthsRef.current[rowIndex];
-          const type = currentInstruments[rowIndex];
-          if (synth) triggerSynth(synth, type, time);
-        }
-      });
+    currentPattern.forEach((row, rowIndex) => {
+      const trackSteps = currentSteps[rowIndex];
+      const ratio = 16 / trackSteps;
+      if (stepRef.current % ratio !== 0) return;
+      const rowStep = Math.floor(step / (16 / steps[rowIndex])) % steps[rowIndex];
+      if (row[rowStep]) {
+        const synth = synthsRef.current[rowIndex];
+        const type = currentInstruments[rowIndex];
+        if (synth) triggerSynth(synth, type, time, steps[rowIndex]);
+      }
+    });
 
-      requestAnimationFrame(() => { setStep(currentStep); });
-      stepRef.current = (currentStep + 1) % STEPS;
-    }, "8n");
+    requestAnimationFrame(() => setStep(stepRef.current));
+    stepRef.current = (stepRef.current + 1) % 16;
+  }, "16n");
 
     return () => {
       Tone.Transport.cancel();
@@ -78,6 +85,24 @@ export default function App() {
     setPattern((prev) => {
       const copy = prev.map((r) => [...r]);
       copy[row][col] = copy[row][col] ? 0 : 1;
+      return copy;
+    });
+  };
+
+  const changeSteps = (rowIndex: number, newSteps: number) => {
+    setSteps((prev) => {
+      const copy = [...prev];
+      copy[rowIndex] = newSteps;
+      return copy;
+    });
+    setPattern((prev) => {
+      const copy = [...prev];
+      const row = copy[rowIndex];
+      if (newSteps > row.length) {
+        copy[rowIndex] = [...row, ...Array(newSteps - row.length).fill(0)];
+      } else {
+        copy[rowIndex] = row.slice(0, newSteps);
+      }
       return copy;
     });
   };
@@ -150,6 +175,8 @@ export default function App() {
     synth.volume.value = sliderToDb(80);
 
     synthsRef.current = [...synthsRef.current, synth];
+
+    setSteps((prev) => [...prev, DEFAULT_STEPS]);
     setPattern((prev) => [...prev, emptyRow()]);
     setInstruments((prev) => [...prev, 'kick']);
     setVolumes((prev) => [...prev, 80]);
@@ -158,10 +185,13 @@ export default function App() {
 
   const removeTrack = (rowIndex: number) => {
     const fx = fxChainsRef.current[rowIndex];
+
     if (fx) { fx.reverb.dispose(); fx.distortion.dispose(); fx.delay.dispose(); }
     fxChainsRef.current = fxChainsRef.current.filter((_, i) => i !== rowIndex);
     synthsRef.current[rowIndex]?.dispose();
     synthsRef.current = synthsRef.current.filter((_, i) => i !== rowIndex);
+
+    setSteps((prev) => prev.filter((_, i) => i !== rowIndex));
     setPattern((prev) => prev.filter((_, i) => i !== rowIndex));
     setInstruments((prev) => prev.filter((_, i) => i !== rowIndex));
     setVolumes((prev) => prev.filter((_, i) => i !== rowIndex));
@@ -189,6 +219,16 @@ export default function App() {
         e.preventDefault();
         isPlaying ? stop() : start();
       }
+      if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        stepRef.current = (stepRef.current + 2) % 16;
+        setStep(stepRef.current);
+      }
+      if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        stepRef.current = (stepRef.current - 2 + 16) % 16;
+        setStep(stepRef.current);
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -212,7 +252,8 @@ export default function App() {
                 <div
                   key={colIndex}
                   onClick={() => toggleStep(rowIndex, colIndex)}
-                  className={`cell ${cell ? 'active' : ''} ${colIndex === step ? 'playing' : ''}`}
+                  className={`cell ${cell ? 'active' : ''} ${colIndex === Math.floor(step / (16 / steps[rowIndex])) % steps[rowIndex] ? 'playing' : ''}`}
+                  style={{ width: `${(540 - (steps[rowIndex] - 1) * 8) / steps[rowIndex]}px` }}
                 />
               ))}
 
@@ -237,6 +278,14 @@ export default function App() {
                   />
                 )}
               </div>
+
+              <button className="steps-select" onClick={() => {
+                const currentIndex = STEP_OPTIONS.indexOf(steps[rowIndex]);
+                const nextIndex = (currentIndex + 1) % STEP_OPTIONS.length;
+                changeSteps(rowIndex, STEP_OPTIONS[nextIndex]);
+              }}>
+                {steps[rowIndex]}
+              </button>
 
               <Tooltip text='Remove Track' direction='right'>
                 <button className='remove-track' onClick={() => removeTrack(rowIndex)}>

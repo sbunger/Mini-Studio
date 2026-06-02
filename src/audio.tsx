@@ -46,14 +46,14 @@ export function createSynth(type: InstrumentType): Tone.MembraneSynth | Tone.Noi
     }
 }
 
-export function triggerSynth(synth: any, type: InstrumentType, time: number) {
+export function triggerSynth(synth: any, type: InstrumentType, time: number, beat: number) {
     switch (type) {
-        case 'kick': synth.triggerAttackRelease("C2", "8n", time); break;
-        case 'tom': synth.triggerAttackRelease('G2', '8n', time); break;
-        case 'snare': synth.triggerAttackRelease("8n", time); break;
-        case 'hat': synth.triggerAttackRelease("16n", time); break;
-        case 'openhat': synth.triggerAttackRelease("8n", time); break;
-        default: synth.triggerAttackRelease('C2', '8n', time);
+        case 'kick': synth.triggerAttackRelease("C2", `${beat}n`, time); break;
+        case 'tom': synth.triggerAttackRelease('G2', `${beat}n`, time); break;
+        case 'snare': synth.triggerAttackRelease(`${beat}n`, time); break;
+        case 'hat': synth.triggerAttackRelease(`${beat}n`, time); break;
+        case 'openhat': synth.triggerAttackRelease(`${beat}n`, time); break;
+        default: synth.triggerAttackRelease('C2', `${beat}n`, time);
     }
 }
 

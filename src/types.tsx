@@ -1,4 +1,5 @@
-export const STEPS = 8
+export const STEP_OPTIONS = [2, 4, 8, 16]
+export const DEFAULT_STEPS = 8;
 
 export const INSTRUMENT_OPTIONS = [
   { value: 'kick', label: 'Kick' },
@@ -17,4 +18,4 @@ export type Effects = {
 };
 
 export const initialEffects: Effects = { reverb: 0, distortion: 0, delay: 0 };
-export const emptyRow = () => Array(STEPS).fill(0);
+export const emptyRow = () => Array(DEFAULT_STEPS).fill(0);

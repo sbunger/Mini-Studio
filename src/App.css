@@ -133,7 +133,7 @@ input {
     border: none;
     border-radius: 2px;
 
-    transition: all .15s;
+    transition: color .15s, outline .15s, transform .15s;
 
     outline: #e05c8a solid 0px;
     cursor: pointer;
@@ -158,13 +158,15 @@ input {
     outline: #1f9688 solid 2.5px;
 }
 
-.remove-track, .track-settings, .settings {
+.remove-track, .track-settings, .settings, .steps-select {
     width: 40px;
     height: 40px;
     border-radius: 2px;
 
     background-color: #e6eaf2;
     color: #1e1e21;
+    outline: none;
+    border: none;
 
     transition: .15s all;
 }
