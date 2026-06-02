@@ -344,7 +344,7 @@ export default function App() {
               </button>
             </Tooltip>
             {(settingsOpen || closingSettings) && (
-              <SettingsPanel isClosing={closingSettings} onClose={closeSettings} />
+              <SettingsPanel isClosing={closingSettings}/>
             )}
           </div>
 
