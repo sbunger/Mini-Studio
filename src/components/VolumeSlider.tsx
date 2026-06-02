@@ -25,7 +25,7 @@ export function VolumeSlider({ value, onChange }: { value: number; onChange: (v:
     };
 
     return (
-        <Tooltip text={value === 0 ? 'Muted' : `${value}`} direction='left'>
+        <Tooltip text={value === 0 ? 'Muted' : `Volume: ${value}`} direction='left'>
             <div className='volume-control' ref={trackRef} onMouseDown={handleMouseDown}>
                 <div className='volume-indicator' style={{ width: `${value}%` }} />
                 {value > 60 ? <SoundHighSolid width={20}/> : value > 25 ? <SoundLowSolid width={20}/> : value > 0 ? <SoundMinSolid width={20}/> : <SoundOffSolid width={20}/>}

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import * as Tone from "tone";
-import { PlaySolid, PauseSolid, Xmark, Plus, Menu, IosSettings } from 'iconoir-react';
+import { MusicDoubleNote, PlaySolid, PauseSolid, Xmark, Plus, Menu, IosSettings } from 'iconoir-react';
 import "./App.css";
 
 import { createSynth, triggerSynth, addEffects, sliderToDb } from './audio';
@@ -9,6 +9,7 @@ import { Tooltip } from './components/Tooltip';
 import { VolumeSlider } from './components/VolumeSlider';
 import { EffectsPanel } from './components/EffectsPanel';
 import { InstrumentSelect } from './components/InstrumentSelect';
+import { SettingsPanel } from './components/SettingsPanel';
 
 
 const initialPattern = [emptyRow(), emptyRow(), emptyRow()];
@@ -22,8 +23,12 @@ export default function App() {
   const [step, setStep] = useState(0);
 
   const [effects, setEffects] = useState<Effects[]>([initialEffects, initialEffects, initialEffects]);
+
   const [openEffects, setOpenEffects] = useState<number | null>(null);
   const [closingEffects, setClosingEffects] = useState<number | null>(null);
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [closingSettings, setClosingSettings] = useState(false);
 
   const [volumes, setVolumes] = useState<number[]>([80, 40, 60])
   const [bpm, setBpm] = useState(120);
@@ -63,7 +68,7 @@ export default function App() {
       const trackSteps = currentSteps[rowIndex];
       const ratio = 16 / trackSteps;
       if (stepRef.current % ratio !== 0) return;
-      const rowStep = Math.floor(step / (16 / steps[rowIndex])) % steps[rowIndex];
+      const rowStep = Math.floor(stepRef.current / (16 / trackSteps)) % trackSteps;
       if (row[rowStep]) {
         const synth = synthsRef.current[rowIndex];
         const type = currentInstruments[rowIndex];
@@ -147,19 +152,29 @@ export default function App() {
       }, 150);
   };
 
+  const closeSettings = () => {
+    setClosingSettings(true);
+    setTimeout(() => {
+      setSettingsOpen(false);
+      setClosingSettings(false);
+    }, 150);
+  };
+
   useEffect(() => {
-    if (openEffects === null) return;
-
     const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('.effects-panel') && !target.closest('.track-settings')) {
-        closeEffects();
-      }
-    };
+    const target = e.target as HTMLElement;
+    
+    if (openEffects !== null && !target.closest('.effects-panel') && !target.closest('.track-settings')) {
+      closeEffects();
+    }
+    if (settingsOpen && !target.closest('.settings-panel') && !target.closest('.settings')) {
+      closeSettings();
+    }
+  };
 
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [openEffects]);
+  document.addEventListener('mousedown', handleClick);
+  return () => document.removeEventListener('mousedown', handleClick);
+}, [openEffects, settingsOpen]);
 
   const changeVolume = (rowIndex: number, value: number) => {
     synthsRef.current[rowIndex].volume.value = sliderToDb(value);
@@ -236,6 +251,7 @@ export default function App() {
   }, [isPlaying])
 
   return (
+  <>
     <div className='app'>
       <div className="grid">
         {pattern.map((row, rowIndex) => {
@@ -279,6 +295,7 @@ export default function App() {
                 )}
               </div>
 
+              <Tooltip text='Beat Division'>
               <button className="steps-select" onClick={() => {
                 const currentIndex = STEP_OPTIONS.indexOf(steps[rowIndex]);
                 const nextIndex = (currentIndex + 1) % STEP_OPTIONS.length;
@@ -286,6 +303,7 @@ export default function App() {
               }}>
                 {steps[rowIndex]}
               </button>
+              </Tooltip>
 
               <Tooltip text='Remove Track' direction='right'>
                 <button className='remove-track' onClick={() => removeTrack(rowIndex)}>
@@ -319,11 +337,16 @@ export default function App() {
             </button>
           </Tooltip>
 
-          <Tooltip text='Options' direction='bottom'>
-            <button className='settings'>
-              <IosSettings color="currentColor" width={24}/>
-            </button>
-          </Tooltip>
+          <div style={{ position: 'relative' }}>
+            <Tooltip text='Settings' direction='bottom'>
+              <button className='settings' onClick={() => settingsOpen ? closeSettings() : setSettingsOpen(true)}>
+                <IosSettings color="currentColor" width={24} />
+              </button>
+            </Tooltip>
+            {(settingsOpen || closingSettings) && (
+              <SettingsPanel isClosing={closingSettings} onClose={closeSettings} />
+            )}
+          </div>
 
           <button className='play' onClick={isPlaying ? stop : start}>
             {isPlaying ? <PauseSolid color="currentColor" width={24} /> : <PlaySolid color="currentColor" width={24} />}
@@ -331,5 +354,13 @@ export default function App() {
         </div>
       </div>
     </div>
+    <div className='mobile-message'>
+      <div className='mobile-cont'>
+        <MusicDoubleNote />
+        <h1>Mini Studio</h1>
+      </div>
+      <p>Please open on desktop to use.</p>
+    </div>
+  </>
   )
 }
