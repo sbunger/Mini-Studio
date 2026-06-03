@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import * as Tone from "tone";
-import { MusicDoubleNote, PlaySolid, PauseSolid, Xmark, Plus, Menu, IosSettings } from 'iconoir-react';
+import { MusicDoubleNote, MusicNoteSolid, PlaySolid, PauseSolid, Xmark, Plus, DownloadSquareSolid, Sparks, SparksSolid } from 'iconoir-react';
 import "./App.css";
 
 import { createSynth, triggerSynth, addEffects, sliderToDb } from './audio';
-import { STEP_OPTIONS, initialEffects, emptyRow, InstrumentType, Effects, DEFAULT_STEPS } from './types';
+import { STEP_OPTIONS, initialEffects, emptyRow, InstrumentType, Effects, DEFAULT_STEPS, SaveState } from './types';
 import { Tooltip } from './components/Tooltip';
 import { VolumeSlider } from './components/VolumeSlider';
 import { EffectsPanel } from './components/EffectsPanel';
@@ -226,7 +226,62 @@ export default function App() {
   const stop = () => {
     Tone.Transport.stop();
     setIsPlaying(false);
-  }
+  };
+
+  const save = () => {
+    const state: SaveState = { pattern, instruments, steps, volumes, effects, bpm};
+    const json = JSON.stringify(state);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pattern.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const load = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const state: SaveState = JSON.parse(ev.target?.result as string);
+
+        synthsRef.current.forEach(s => s?.dispose());
+        fxChainsRef.current.forEach(fx => {
+          if (fx) { fx.reverb.dispose(); fx.distortion.dispose(); fx.delay.dispose(); }
+        });
+
+        fxChainsRef.current = state.effects.map((fx) => {
+          const chain = addEffects(fx);
+          return chain;
+        });
+
+        synthsRef.current = state.instruments.map((inst, i) => {
+          const synth = createSynth(inst);
+          synth.disconnect();
+          synth.connect(fxChainsRef.current[i].delay);
+          synth.volume.value = sliderToDb(state.volumes[i]);
+          return synth;
+        });
+
+        setPattern(state.pattern);
+        setInstruments(state.instruments);
+        setSteps(state.steps);
+        setVolumes(state.volumes);
+        setEffects(state.effects);
+        setBpm(state.bpm);
+
+        Tone.Transport.bpm.value = state.bpm;
+      } catch {
+        console.error('Invalid Save File');
+      }
+    };
+
+    reader.readAsText(file);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -269,7 +324,7 @@ export default function App() {
                   key={colIndex}
                   onClick={() => toggleStep(rowIndex, colIndex)}
                   className={`cell ${cell ? 'active' : ''} ${colIndex === Math.floor(step / (16 / steps[rowIndex])) % steps[rowIndex] ? 'playing' : ''}`}
-                  style={{ width: `${(540 - (steps[rowIndex] - 1) * 8) / steps[rowIndex]}px` }}
+                  style={{ width: `${(520 - (steps[rowIndex] - 1) * 8) / steps[rowIndex]}px` }}
                 />
               ))}
 
@@ -282,7 +337,10 @@ export default function App() {
                       setOpenEffects(rowIndex);
                     }
                   }}>
-                    <Menu color="currentColor" width={24} />
+                    {(effects[rowIndex].delay != 0 || effects[rowIndex].reverb != 0 || effects[rowIndex].distortion != 0)
+                      ? <SparksSolid color="currentColor" width={24} />
+                      : <Sparks color="currentColor" width={24} />
+                    }
                   </button>
                 </Tooltip>
                 {(openEffects === rowIndex || closingEffects === rowIndex) &&  (
@@ -315,21 +373,23 @@ export default function App() {
         })}
 
         <div className='end-container'>
-          <div className='bpm-label'>
-            <p>BPM:</p>
-            <input
-              type="number"
-              value={bpm}
-              onChange={(e) => {
-                setBpm(+e.target.value);
-              }}
-              onBlur={(e) => {
-                const val = Math.min(240, Math.max(60, +e.target.value));
-                setBpm(val);
-                Tone.Transport.bpm.value = val;
-              }}
-            />
-          </div>
+          <Tooltip text='BPM' direction='bottom'>
+            <div className='bpm-label'>
+              <div className='note-container'><MusicNoteSolid color="currentColor" width={24}/>:</div>
+              <input
+                type="number"
+                value={bpm}
+                onChange={(e) => {
+                  setBpm(+e.target.value);
+                }}
+                onBlur={(e) => {
+                  const val = Math.min(240, Math.max(60, +e.target.value));
+                  setBpm(val);
+                  Tone.Transport.bpm.value = val;
+                }}
+              />
+            </div>
+          </Tooltip>
           
           <Tooltip text='New Track' direction='bottom'>
             <button className="new-track" onClick={() => addTrack()}>
@@ -338,19 +398,25 @@ export default function App() {
           </Tooltip>
 
           <div style={{ position: 'relative' }}>
-            <Tooltip text='Settings' direction='bottom'>
+            <Tooltip text='Save + Load' direction='bottom'>
               <button className='settings' onClick={() => settingsOpen ? closeSettings() : setSettingsOpen(true)}>
-                <IosSettings color="currentColor" width={24} />
+                <DownloadSquareSolid color="currentColor" width={24} />
               </button>
             </Tooltip>
             {(settingsOpen || closingSettings) && (
-              <SettingsPanel isClosing={closingSettings}/>
+              <SettingsPanel 
+                isClosing={closingSettings}
+                onSave={save}
+                onLoad={load}
+              />
             )}
           </div>
 
-          <button className='play' onClick={isPlaying ? stop : start}>
-            {isPlaying ? <PauseSolid color="currentColor" width={24} /> : <PlaySolid color="currentColor" width={24} />}
-          </button>
+          <Tooltip text={isPlaying ? 'Pause' : 'Play'} direction='right'>
+            <button className='play' onClick={isPlaying ? stop : start}>
+              {isPlaying ? <PauseSolid color="currentColor" width={24} /> : <PlaySolid color="currentColor" width={24} />}
+            </button>
+          </Tooltip>
         </div>
       </div>
     </div>

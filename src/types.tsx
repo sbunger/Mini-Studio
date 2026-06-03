@@ -17,5 +17,14 @@ export type Effects = {
   delay: number;
 };
 
+export type SaveState = {
+  pattern: number[][];
+  instruments: InstrumentType[];
+  steps: number[];
+  volumes: number[];
+  effects: Effects[];
+  bpm: number;
+};
+
 export const initialEffects: Effects = { reverb: 0, distortion: 0, delay: 0 };
 export const emptyRow = () => Array(DEFAULT_STEPS).fill(0);
