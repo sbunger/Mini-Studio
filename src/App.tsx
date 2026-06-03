@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import * as Tone from "tone";
-import { MusicDoubleNote, MusicNoteSolid, PlaySolid, PauseSolid, Xmark, Plus, DownloadSquareSolid, Sparks, SparksSolid } from 'iconoir-react';
+import { MusicDoubleNote, PlaySolid, PauseSolid, Xmark, Plus, DownloadSquareSolid, Sparks, SparksSolid } from 'iconoir-react';
 import "./App.css";
 
 import { createSynth, triggerSynth, addEffects, sliderToDb } from './audio';
@@ -10,6 +10,7 @@ import { VolumeSlider } from './components/VolumeSlider';
 import { EffectsPanel } from './components/EffectsPanel';
 import { InstrumentSelect } from './components/InstrumentSelect';
 import { SettingsPanel } from './components/SettingsPanel';
+import { BpmDrag } from './components/BpmDrag';
 
 
 const initialPattern = [emptyRow(), emptyRow(), emptyRow()];
@@ -162,19 +163,19 @@ export default function App() {
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-    const target = e.target as HTMLElement;
+      const target = e.target as HTMLElement;
     
-    if (openEffects !== null && !target.closest('.effects-panel') && !target.closest('.track-settings')) {
-      closeEffects();
-    }
-    if (settingsOpen && !target.closest('.settings-panel') && !target.closest('.settings')) {
-      closeSettings();
-    }
-  };
+      if (openEffects !== null && !target.closest('.effects-panel') && !target.closest('.track-settings')) {
+        closeEffects();
+      }
+      if (settingsOpen && !target.closest('.settings-panel') && !target.closest('.settings')) {
+        closeSettings();
+      }
+    };
 
-  document.addEventListener('mousedown', handleClick);
-  return () => document.removeEventListener('mousedown', handleClick);
-}, [openEffects, settingsOpen]);
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [openEffects, settingsOpen]);
 
   const changeVolume = (rowIndex: number, value: number) => {
     synthsRef.current[rowIndex].volume.value = sliderToDb(value);
@@ -374,21 +375,10 @@ export default function App() {
 
         <div className='end-container'>
           <Tooltip text='BPM' direction='bottom'>
-            <div className='bpm-label'>
-              <div className='note-container'><MusicNoteSolid color="currentColor" width={24}/>:</div>
-              <input
-                type="number"
-                value={bpm}
-                onChange={(e) => {
-                  setBpm(+e.target.value);
-                }}
-                onBlur={(e) => {
-                  const val = Math.min(240, Math.max(60, +e.target.value));
-                  setBpm(val);
-                  Tone.Transport.bpm.value = val;
-                }}
-              />
-            </div>
+            <BpmDrag value={bpm} onChange={(v) => {
+              setBpm(v);
+              Tone.Transport.bpm.value = v;
+            }} />
           </Tooltip>
           
           <Tooltip text='New Track' direction='bottom'>

@@ -306,38 +306,26 @@ input {
     display: flex;
 }
 
-.bpm-label input[type="number"] {
+.bpm-drag {
     font-size: 14px;
     color: #1e1e21;
     background-color: #fff5f8;
 
     filter: drop-shadow(0 -1px 2px #fff5f88d) drop-shadow(0 1px 2px #c4d3ea);
 
-    width: 30px;
+    padding: 2px 6px;
+    min-width: 30px;
+
     border-radius: 1.5px;
     text-align: center;
 
     transition: .15s all;
+    cursor: ew-resize;
+    user-select: none;
 }
 
-.bpm-label input[type="number"]:hover {
+.bpm-drag:hover {
   background-color: #e6eaf2;
-}
-
-.bpm-label input[type="number"]:focus-visible {
-  outline: none;
-}
-
-
-
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-}
-
-input[type="number"] { 
-    -moz-appearance: textfield; 
-    appearance: textfield;
 }
 
 
