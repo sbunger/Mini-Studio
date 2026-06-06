@@ -158,7 +158,7 @@ input {
     outline: #1f9688 solid 2.5px;
 }
 
-.remove-track, .track-settings, .settings, .steps-select, .move-track, .settings-panel button {
+.remove-track, .track-settings, .settings, .steps-select, .move-track, .settings-panel button, .activity-meter {
     width: 40px;
     height: 40px;
     border-radius: 2px;
@@ -245,7 +245,7 @@ input {
 }
 
 .new-track {
-    width: 0;
+    min-width: 500px;
     flex: 1;
     height: 40px;
     border-radius: 2px;
@@ -550,3 +550,35 @@ input {
         height: 30px;
     }
 }
+
+
+.activity-meter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.activity-bar {
+    width: 4px;
+    height: 6px;
+    background-color: #fff5f8;
+    border-radius: 2px;
+    transition: height .1s ease-out, background-color .1s;
+    filter: drop-shadow(0 -1px 2px #fff5f88d) drop-shadow(0 1px 2px #c4d3ea);
+
+    transition: .15s all;
+}
+
+
+.activity-bar:nth-child(1) { height: 6px; }
+.activity-bar:nth-child(2) { height: 8px; }
+.activity-bar:nth-child(3) { height: 13px; }
+.activity-bar:nth-child(4) { height: 8px; }
+.activity-bar:nth-child(5) { height: 6px; }
+
+.activity-meter.active .activity-bar:nth-child(1) { height: 8px; animation-delay: 0ms; }
+.activity-meter.active .activity-bar:nth-child(2) { height: 14px; animation-delay: 0ms; }
+.activity-meter.active .activity-bar:nth-child(3) { height: 25px; animation-delay: 0ms; }
+.activity-meter.active .activity-bar:nth-child(4) { height: 14px; animation-delay: 0ms; }
+.activity-meter.active .activity-bar:nth-child(5) { height: 8px; animation-delay: 0ms; }

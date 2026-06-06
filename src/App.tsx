@@ -11,6 +11,7 @@ import { EffectsPanel } from './components/EffectsPanel';
 import { InstrumentSelect } from './components/InstrumentSelect';
 import { SettingsPanel } from './components/SettingsPanel';
 import { BpmDrag } from './components/BpmDrag';
+import { ActivityMeter } from './components/ActivityMeter';
 
 
 const initialPattern = [emptyRow(), emptyRow(), emptyRow()];
@@ -22,6 +23,8 @@ export default function App() {
   const [instruments, setInstruments] = useState<InstrumentType[]>(initalInstruments);
   const [steps, setSteps] = useState<number[]>([8, 8, 8]);
   const [step, setStep] = useState(0);
+
+  const [triggered, setTriggered] = useState<boolean[]>([false, false, false]);
 
   const [effects, setEffects] = useState<Effects[]>([initialEffects, initialEffects, initialEffects]);
 
@@ -73,7 +76,24 @@ export default function App() {
       if (row[rowStep]) {
         const synth = synthsRef.current[rowIndex];
         const type = currentInstruments[rowIndex];
-        if (synth) triggerSynth(synth, type, time, steps[rowIndex]);
+        if (synth) {
+          triggerSynth(synth, type, time, steps[rowIndex]);
+          requestAnimationFrame(() => {
+            setTriggered(prev => {
+              const copy = [...prev];
+              copy[rowIndex] = true;
+              return copy;
+            });
+
+            setTimeout(() => {
+              setTriggered(prev => {
+                const copy = [...prev];
+                copy[rowIndex] = false;
+                return copy;
+              });
+            }, 100)
+          })
+        };
       }
     });
 
@@ -197,6 +217,7 @@ export default function App() {
     setInstruments((prev) => [...prev, 'kick']);
     setVolumes((prev) => [...prev, 80]);
     setEffects((prev) => [...prev, initialEffects]);
+    setTriggered((prev) => [...prev, false]);
   };
 
   const removeTrack = (rowIndex: number) => {
@@ -212,6 +233,7 @@ export default function App() {
     setInstruments((prev) => prev.filter((_, i) => i !== rowIndex));
     setVolumes((prev) => prev.filter((_, i) => i !== rowIndex));
     setEffects((prev) => prev.filter((_, i) => i !== rowIndex));
+    setTriggered((prev) => prev.filter((_, i) => i !== rowIndex));
   }
 
   const start = async () => {
@@ -314,7 +336,8 @@ export default function App() {
           return (
             <div key={rowIndex} className="row">
               <VolumeSlider value={volumes[rowIndex]} onChange={(v) => changeVolume(rowIndex, v)} />
-              
+              <ActivityMeter triggered={triggered[rowIndex]}/>
+
               <InstrumentSelect
                 value={instruments[rowIndex]}
                 onChange={(v) => changeInstrument(rowIndex, v)}
