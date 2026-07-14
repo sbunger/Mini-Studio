@@ -9,3 +9,5 @@ I created a tiny sequencer in react to help create simple beats and drum track w
  - Save and load from JSON file
  ## Screenshots
 <img src="repo/image1.png" width="50%"/><img src="repo/image.png" width="50%"/>
+## How to Run Locally
+To install and run locally, clone the repo. Run `npm install` in the new directory and `npm run dev` to start a server usually at `http://localhost:3000` or `http://localhost:5173`.
